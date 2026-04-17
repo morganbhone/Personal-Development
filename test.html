@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LevelUp - Phase 2</title>
+    <style>
+        :root {
+            --bg1: #0f0c29;
+            --bg2: #302b63;
+            --bg3: #24243e;
+            --card: #1d1f38;
+            --card-2: #26294a;
+            --accent: #00d2ff;
+            --accent-2: #5ee7ff;
+            --danger: #ff416c;
+            --gold: #f1c40f;
+            --text: #ffffff;
+            --muted: #b8bfd5;
+            --line: #404772;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+            padding: 16px;
+        }
+
+        .app-title {
+            margin: 0 0 14px;
+            font-size: 1.4rem;
+            letter-spacing: 0.4px;
+        }
+
+        .page-links {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .page-link {
+            text-decoration: none;
+            color: #041923;
+            background: var(--accent);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 0.86rem;
+        }
+
+        .external-page-card {
+            display: none;
+        }
+
+        .mobile-nav {
+            display: none;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .tab-btn {
+            border: 1px solid var(--line);
+            background: #171a31;
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 210, 255, 0.2);
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .sidebar, .card {
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid #3b426a;
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+            padding: 16px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 6px;
+        }
+
+        .character-visual {
+            margin: 0 0 14px;
+            background: #101532;
+            border: 1px solid #3c4673;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+        }
+
+        .char-icon {
+            font-size: 2.4rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .char-stage {
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .gold-count { color: var(--gold); font-weight: 700; font-size: 1.1rem; }
+
+        .muted { color: var(--muted); font-size: 0.85rem; }
+
+        input, select, button {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            background: #0f132a;
+            color: #e6ecff;
+            border: 1px solid #39436b;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.2s ease;
+            background: var(--accent);
+            color: #041923;
+        }
+
+        button:hover { filter: brightness(1.07); transform: translateY(-1px); }
+
+        .danger-btn { background: var(--danger); color: #fff; }
+
+        .task-item, .shop-item {
+            background: #141a35;
+            border: 1px solid #333e6b;
+            border-left-width: 4px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-item { border-left-color: var(--accent); }
+        .shop-item { border-left-color: var(--gold); }
+
+        .item-text { min-width: 0; }
+        .item-title {
+            display: block;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-sub { color: var(--muted); font-size: 0.8rem; }
+
+        .shop-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shop-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .buy-btn, .task-action-btn {
+            width: auto;
+            margin: 0;
+            padding: 6px 12px;
+            white-space: nowrap;
+        }
+
+        .buy-btn { background: var(--gold); color: #23200b; }
+        .delete-btn { background: var(--danger); color: #fff; }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .section-title {
+            margin-top: 14px;
+            margin-bottom: 10px;
+        }
+
+        .habit-item {
+            background: #141a35;
+            border: 1px solid #333e6b;
+            border-left: 4px solid #7af2b6;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .habit-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .habit-progress {
+            margin: 6px 0;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .finance-section {
+            background: #141a35;
+            border: 1px solid #333e6b;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        .finance-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 8px;
+        }
+
+        .finance-list {
+            max-height: 170px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .finance-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            background: #101733;
+            border: 1px solid #2e3a68;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+        }
+
+        .graph-block {
+            margin-bottom: 10px;
+        }
+
+        .graph-title {
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 0.83rem;
+        }
+
+        .bar-list {
+            display: grid;
+            gap: 6px;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 90px 1fr auto;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 9px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #0f132a;
+            border: 1px solid #2f3862;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        }
+
+        .bar-fill.expense { background: linear-gradient(90deg, #ff6a8c, var(--danger)); }
+        .bar-fill.net { background: linear-gradient(90deg, #8bf0bd, #3dd88b); }
+
+        hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
+
+        @media (max-width: 980px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Mobile "separate pages" */
+        @media (max-width: 700px) {
+            body { padding: 12px; }
+            .app-title { font-size: 1.2rem; margin-bottom: 10px; }
+            .mobile-nav { display: grid; grid-template-columns: repeat(2, 1fr); }
+            .layout {
+                display: block;
+            }
+
+            .mobile-page {
+                display: none;
+            }
+            .mobile-page.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="app-title">LevelUp</h1>
+    <div class="page-links">
+        <a class="page-link" href="./shop.html">Open Reward Shop</a>
+        <a class="page-link" href="./finance.html">Open Financial Management</a>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <button class="tab-btn active" data-page="statsPage" type="button">Stats</button>
+        <button class="tab-btn" data-page="tasksPage" type="button">Tasks</button>
+    </div>
+
+    <div class="layout">
+        <div class="sidebar mobile-page active" id="statsPage">
+            <h3>Character Sheet</h3>
+            <div class="character-visual">
+                <span id="characterIcon" class="char-icon">🧍</span>
+                <div id="characterStage" class="char-stage">Novice Adventurer</div>
+            </div>
+            <div class="stat-line"><span>Level:</span> <span id="level">1</span></div>
+            <div class="stat-line"><span>Gold:</span> <span id="gold" class="gold-count">0</span></div>
+            <div class="stat-line"><span>XP:</span> <span id="xp">0/100</span></div>
+            <hr>
+            <h4>Skills</h4>
+            <div class="stat-line"><span>Strength:</span> <span id="s-str">0</span></div>
+            <div class="stat-line"><span>Intelligence:</span> <span id="s-int">0</span></div>
+            <hr>
+            <button id="resetBtn" class="danger-btn" type="button">Reset Progress</button>
+        </div>
+
+        <div class="main-content">
+            <div class="card mobile-page active" id="tasksPage">
+                <h3>Quest Log (Tasks)</h3>
+                <input type="text" id="tName" placeholder="Task name...">
+                <select id="tSkill">
+                    <option value="str">Strength (Physical)</option>
+                    <option value="int">Intelligence (Mental)</option>
+                </select>
+                <select id="tDiff">
+                    <option value="10">Easy (10g)</option>
+                    <option value="30">Medium (30g)</option>
+                    <option value="60">Hard (60g)</option>
+                </select>
+                <button id="addTaskBtn" type="button">Add Quest</button>
+                <div id="taskList"></div>
+                <button id="reckoningBtn" class="danger-btn" type="button">End Day (Punish)</button>
+                <hr>
+                <h4 class="section-title">Habit Journey</h4>
+                <p class="muted">Example: Walking, 1000 steps/day, for 3 months. Goal increases weekly.</p>
+                <input type="text" id="hName" placeholder="Habit name... (e.g. Walking)">
+                <input type="number" id="hTarget" min="1" step="1" placeholder="Daily target... (e.g. 1000)">
+                <input type="number" id="hMonths" min="1" step="1" placeholder="Duration in months... (e.g. 3)">
+                <button id="addHabitBtn" type="button">Start Habit</button>
+                <div id="habitList"></div>
+            </div>
+
+            <div class="card mobile-page active external-page-card" id="shopPage">
+                <h3>The Reward Shop</h3>
+                <p class="muted">Spend gold on real-life treats.</p>
+                <div id="shopList"></div>
+                <hr>
+                <h4>Add Custom Reward</h4>
+                <input type="text" id="rIcon" placeholder="Icon (emoji)... e.g. 🍕">
+                <input type="text" id="rName" placeholder="Reward name...">
+                <input type="number" id="rCost" min="1" step="1" placeholder="Cost in gold...">
+                <input type="number" id="rLevelReq" min="1" step="1" placeholder="Minimum level required...">
+                <button id="addRewardBtn" type="button">Add to Shop</button>
+            </div>
+
+            <!-- <div class="card mobile-page active" id="financePage">
+                <h3>Financial Management</h3>
+                <p class="muted">Track your income and expenses with visual summaries.</p>
+
+                <div class="finance-section">
+                    <h4>Monthly Income</h4>
+                    <input type="number" id="fIncomeAmount" min="0.01" step="0.01" placeholder="Income amount...">
+                    <input type="text" id="fIncomeSubject" placeholder="Subject... (Salary, Freelance)">
+                    <input type="date" id="fIncomeDate">
+                    <button id="addIncomeBtn" type="button">Add Income</button>
+                    <div class="finance-total"><span>Total Income:</span><strong id="incomeTotal">0</strong></div>
+                    <div id="incomeList" class="finance-list"></div>
+                </div>
+
+                <div class="finance-section">
+                    <h4>Daily Expense</h4>
+                    <input type="number" id="fExpenseAmount" min="0.01" step="0.01" placeholder="Expense amount...">
+                    <input type="text" id="fExpenseSubject" placeholder="Subject... (Lunch, Transport)">
+                    <input type="text" id="fExpenseCategory" placeholder="Category... (Food, Bills, Travel)">
+                    <input type="date" id="fExpenseDate">
+                    <button id="addExpenseBtn" type="button">Add Expense</button>
+                    <div class="finance-total"><span>Total Expense:</span><strong id="expenseTotal">0</strong></div>
+                    <div id="expenseList" class="finance-list"></div>
+                </div>
+
+                <div class="finance-section">
+                    <h4>Income & Expense Graph</h4>
+                    <div class="graph-block">
+                        <div class="graph-title">Expenses per Categories</div>
+                        <div id="categoryGraph" class="bar-list"></div>
+                    </div>
+                    <div class="graph-block">
+                        <div class="graph-title">Total Income vs Total Expense</div>
+                        <div id="overviewGraph" class="bar-list"></div>
+                    </div>
+                    <div class="graph-block">
+                        <div class="graph-title">Yearly Revenue (Income - Expense)</div>
+                        <div id="yearlyGraph" class="bar-list"></div>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "gamifyLocalDB";
+
+        const defaultState = {
+            gold: 0,
+            xp: 0,
+            level: 1,
+            str: 0,
+            int: 0,
+            tasks: [],
+            habits: [],
+            incomes: [],
+            expenses: [],
+            rewards: [
+                { id: crypto.randomUUID(), icon: "🎬", name: "Watch Movie", cost: 100, levelReq: 1 },
+                { id: crypto.randomUUID(), icon: "🍕", name: "Order Pizza", cost: 300, levelReq: 2 }
+            ]
+        };
+
+        let state = structuredClone(defaultState);
+
+        const el = {
+            level: document.getElementById("level"),
+            characterIcon: document.getElementById("characterIcon"),
+            characterStage: document.getElementById("characterStage"),
+            gold: document.getElementById("gold"),
+            xp: document.getElementById("xp"),
+            str: document.getElementById("s-str"),
+            int: document.getElementById("s-int"),
+            tName: document.getElementById("tName"),
+            tSkill: document.getElementById("tSkill"),
+            tDiff: document.getElementById("tDiff"),
+            taskList: document.getElementById("taskList"),
+            addTaskBtn: document.getElementById("addTaskBtn"),
+            reckoningBtn: document.getElementById("reckoningBtn"),
+            hName: document.getElementById("hName"),
+            hTarget: document.getElementById("hTarget"),
+            hMonths: document.getElementById("hMonths"),
+            addHabitBtn: document.getElementById("addHabitBtn"),
+            habitList: document.getElementById("habitList"),
+            rIcon: document.getElementById("rIcon"),
+            rName: document.getElementById("rName"),
+            rCost: document.getElementById("rCost"),
+            rLevelReq: document.getElementById("rLevelReq"),
+            addRewardBtn: document.getElementById("addRewardBtn"),
+            shopList: document.getElementById("shopList"),
+            fIncomeAmount: document.getElementById("fIncomeAmount"),
+            fIncomeSubject: document.getElementById("fIncomeSubject"),
+            fIncomeDate: document.getElementById("fIncomeDate"),
+            addIncomeBtn: document.getElementById("addIncomeBtn"),
+            incomeTotal: document.getElementById("incomeTotal"),
+            incomeList: document.getElementById("incomeList"),
+            fExpenseAmount: document.getElementById("fExpenseAmount"),
+            fExpenseSubject: document.getElementById("fExpenseSubject"),
+            fExpenseCategory: document.getElementById("fExpenseCategory"),
+            fExpenseDate: document.getElementById("fExpenseDate"),
+            addExpenseBtn: document.getElementById("addExpenseBtn"),
+            expenseTotal: document.getElementById("expenseTotal"),
+            expenseList: document.getElementById("expenseList"),
+            categoryGraph: document.getElementById("categoryGraph"),
+            overviewGraph: document.getElementById("overviewGraph"),
+            yearlyGraph: document.getElementById("yearlyGraph"),
+            resetBtn: document.getElementById("resetBtn"),
+            mobileNav: document.getElementById("mobileNav")
+        };
+
+        function normalizeLoadedState(data) {
+            if (!data || typeof data !== "object") return structuredClone(defaultState);
+            return {
+                gold: Number.isFinite(data.gold) ? data.gold : 0,
+                xp: Number.isFinite(data.xp) ? data.xp : 0,
+                level: Number.isFinite(data.level) && data.level > 0 ? data.level : 1,
+                str: Number.isFinite(data.str) ? data.str : 0,
+                int: Number.isFinite(data.int) ? data.int : 0,
+                tasks: Array.isArray(data.tasks) ? data.tasks.map((t) => ({
+                    id: t.id || crypto.randomUUID(),
+                    name: String(t.name || "").trim(),
+                    skill: t.skill === "int" ? "int" : "str",
+                    val: Number.isFinite(t.val) ? t.val : 10
+                })).filter((t) => t.name.length > 0) : [],
+                habits: Array.isArray(data.habits) ? data.habits.map((h) => ({
+                    id: h.id || crypto.randomUUID(),
+                    name: String(h.name || "").trim(),
+                    baseTarget: Number.isFinite(h.baseTarget) && h.baseTarget > 0 ? h.baseTarget : 1,
+                    durationMonths: Number.isFinite(h.durationMonths) && h.durationMonths > 0 ? h.durationMonths : 1,
+                    week: Number.isFinite(h.week) && h.week > 0 ? h.week : 1,
+                    completionsThisWeek: Number.isFinite(h.completionsThisWeek) && h.completionsThisWeek >= 0 ? h.completionsThisWeek : 0,
+                    totalCompletions: Number.isFinite(h.totalCompletions) && h.totalCompletions >= 0 ? h.totalCompletions : 0,
+                    totalWeeks: Number.isFinite(h.totalWeeks) && h.totalWeeks > 0 ? h.totalWeeks : 4
+                })).filter((h) => h.name.length > 0) : [],
+                incomes: Array.isArray(data.incomes) ? data.incomes.map((i) => ({
+                    id: i.id || crypto.randomUUID(),
+                    amount: Number.isFinite(i.amount) && i.amount > 0 ? i.amount : 0,
+                    subject: String(i.subject || "").trim(),
+                    date: String(i.date || "")
+                })).filter((i) => i.amount > 0 && i.subject.length > 0) : [],
+                expenses: Array.isArray(data.expenses) ? data.expenses.map((x) => ({
+                    id: x.id || crypto.randomUUID(),
+                    amount: Number.isFinite(x.amount) && x.amount > 0 ? x.amount : 0,
+                    subject: String(x.subject || "").trim(),
+                    category: String(x.category || "").trim() || "Other",
+                    date: String(x.date || "")
+                })).filter((x) => x.amount > 0 && x.subject.length > 0) : [],
+                rewards: Array.isArray(data.rewards) && data.rewards.length > 0
+                    ? data.rewards.map((r) => ({
+                        id: r.id || crypto.randomUUID(),
+                        icon: String(r.icon || "🎁").trim() || "🎁",
+                        name: String(r.name || "").trim(),
+                        cost: Number.isFinite(r.cost) ? r.cost : 1,
+                        levelReq: Number.isFinite(r.levelReq) && r.levelReq > 0 ? r.levelReq : 1
+                    })).filter((r) => r.name.length > 0 && r.cost > 0)
+                    : structuredClone(defaultState.rewards)
+            };
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                state = normalizeLoadedState(JSON.parse(raw));
+            } catch (err) {
+                console.warn("Failed to load saved data:", err);
+                state = structuredClone(defaultState);
+            }
+        }
+
+        function saveToLocal() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            el.level.style.color = "#5ee7ff";
+            setTimeout(() => {
+                el.level.style.color = "";
+            }, 280);
+        }
+
+        function createTaskItem(task, index) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "task-item";
+
+            const textWrap = document.createElement("div");
+            textWrap.className = "item-text";
+
+            const title = document.createElement("span");
+            title.className = "item-title";
+            title.textContent = task.name;
+
+            const sub = document.createElement("span");
+            sub.className = "item-sub";
+            sub.textContent = `${task.skill.toUpperCase()} • +${task.val}g • +${task.val / 2}xp`;
+
+            textWrap.append(title, sub);
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "task-action-btn";
+            btn.textContent = "Complete";
+            btn.addEventListener("click", () => completeTask(index));
+
+            wrapper.append(textWrap, btn);
+            return wrapper;
+        }
+
+        function createShopItem(item, index) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "shop-item";
+
+            const textWrap = document.createElement("div");
+            textWrap.className = "item-text";
+
+            const title = document.createElement("span");
+            title.className = "item-title";
+
+            const titleWrap = document.createElement("div");
+            titleWrap.className = "shop-title";
+
+            const icon = document.createElement("span");
+            icon.className = "shop-icon";
+            icon.textContent = item.icon || "🎁";
+
+            title.textContent = item.name;
+            titleWrap.append(icon, title);
+
+            const sub = document.createElement("span");
+            sub.className = "item-sub";
+            sub.textContent = `${item.cost}g • Req Lv ${item.levelReq || 1}`;
+
+            textWrap.append(titleWrap, sub);
+
+            const actions = document.createElement("div");
+            actions.className = "item-actions";
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "buy-btn";
+            btn.textContent = "Buy";
+            btn.addEventListener("click", () => buyReward(index));
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "task-action-btn delete-btn";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.addEventListener("click", () => deleteReward(index));
+
+            actions.append(btn, deleteBtn);
+            wrapper.append(textWrap, actions);
+            return wrapper;
+        }
+
+        function getCharacterStage(level) {
+            if (level >= 20) return { icon: "🛡️", label: "Legendary Guardian" };
+            if (level >= 12) return { icon: "⚔️", label: "Elite Hero" };
+            if (level >= 6) return { icon: "🧙", label: "Rising Adventurer" };
+            return { icon: "🧍", label: "Novice Adventurer" };
+        }
+
+        function formatMoney(amount) {
+            return `${amount.toFixed(2)}`;
+        }
+
+        function habitCurrentTarget(habit) {
+            const increaseRate = 0.1;
+            return Math.max(1, Math.round(habit.baseTarget * (1 + ((habit.week - 1) * increaseRate))));
+        }
+
+        function createHabitItem(habit, index) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "habit-item";
+
+            const head = document.createElement("div");
+            head.className = "habit-head";
+
+            const titleWrap = document.createElement("div");
+            titleWrap.className = "item-text";
+
+            const title = document.createElement("span");
+            title.className = "item-title";
+            title.textContent = habit.name;
+
+            const targetNow = habitCurrentTarget(habit);
+            const sub = document.createElement("span");
+            sub.className = "item-sub";
+            sub.textContent = `Week ${habit.week}/${habit.totalWeeks} • Daily target: ${targetNow}`;
+            titleWrap.append(title, sub);
+
+            const completeBtn = document.createElement("button");
+            completeBtn.type = "button";
+            completeBtn.className = "task-action-btn";
+            completeBtn.textContent = "Done Today";
+            completeBtn.addEventListener("click", () => progressHabit(index));
+
+            head.append(titleWrap, completeBtn);
+
+            const progress = document.createElement("div");
+            progress.className = "habit-progress";
+            progress.textContent = `This week: ${habit.completionsThisWeek}/7 days • Total done: ${habit.totalCompletions} days`;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "task-action-btn delete-btn";
+            deleteBtn.textContent = "Delete Habit";
+            deleteBtn.addEventListener("click", () => deleteHabit(index));
+
+            wrapper.append(head, progress, deleteBtn);
+            return wrapper;
+        }
+
+        function updateUI() {
+            el.gold.textContent = String(state.gold);
+            el.xp.textContent = `${state.xp}/${state.level * 100}`;
+            el.level.textContent = String(state.level);
+            el.str.textContent = String(state.str);
+            el.int.textContent = String(state.int);
+            const stage = getCharacterStage(state.level);
+            el.characterIcon.textContent = stage.icon;
+            el.characterStage.textContent = stage.label;
+
+            el.taskList.textContent = "";
+            state.tasks.forEach((task, i) => {
+                el.taskList.appendChild(createTaskItem(task, i));
+            });
+
+            el.habitList.textContent = "";
+            state.habits.forEach((habit, i) => {
+                el.habitList.appendChild(createHabitItem(habit, i));
+            });
+
+            renderShop();
+            renderFinance();
+        }
+
+        function addTask() {
+            const name = el.tName.value.trim();
+            const skill = el.tSkill.value === "int" ? "int" : "str";
+            const val = Number.parseInt(el.tDiff.value, 10);
+
+            if (!name) {
+                alert("Please enter a task name.");
+                return;
+            }
+            if (!Number.isFinite(val) || val <= 0) {
+                alert("Task difficulty value is invalid.");
+                return;
+            }
+
+            state.tasks.push({
+                id: crypto.randomUUID(),
+                name,
+                skill,
+                val
+            });
+
+            el.tName.value = "";
+            saveToLocal();
+            updateUI();
+        }
+
+        function completeTask(index) {
+            const task = state.tasks[index];
+            if (!task) return;
+
+            state.gold += task.val;
+            state.xp += task.val / 2;
+            state[task.skill] += 1;
+
+            let gainedLevels = 0;
+            while (state.xp >= state.level * 100) {
+                state.xp -= state.level * 100;
+                state.level += 1;
+                gainedLevels += 1;
+            }
+
+            if (gainedLevels > 0) {
+                alert(`LEVEL UP! You reached Level ${state.level}. (+${gainedLevels} level${gainedLevels > 1 ? "s" : ""})`);
+            }
+
+            state.tasks.splice(index, 1);
+            saveToLocal();
+            updateUI();
+        }
+
+        function buyReward(index) {
+            const reward = state.rewards[index];
+            if (!reward) return;
+
+            if (state.level < (reward.levelReq || 1)) {
+                alert(`You need to be at least Level ${reward.levelReq} to buy this reward.`);
+                return;
+            }
+
+            if (state.gold < reward.cost) {
+                alert("Insufficient Gold!");
+                return;
+            }
+
+            state.gold -= reward.cost;
+            saveToLocal();
+            updateUI();
+            alert(`Purchase successful: ${reward.name}`);
+        }
+
+        function deleteReward(index) {
+            const reward = state.rewards[index];
+            if (!reward) return;
+            state.rewards.splice(index, 1);
+            saveToLocal();
+            updateUI();
+        }
+
+        function addReward() {
+            const icon = (el.rIcon.value.trim() || "🎁").slice(0, 3);
+            const name = el.rName.value.trim();
+            const cost = Number.parseInt(el.rCost.value, 10);
+            const levelReq = Number.parseInt(el.rLevelReq.value, 10);
+
+            if (!name) {
+                alert("Please enter a reward name.");
+                return;
+            }
+            if (!Number.isFinite(cost) || cost <= 0) {
+                alert("Reward cost must be a positive number.");
+                return;
+            }
+            if (!Number.isFinite(levelReq) || levelReq <= 0) {
+                alert("Level requirement must be a positive number.");
+                return;
+            }
+
+            state.rewards.push({
+                id: crypto.randomUUID(),
+                icon,
+                name,
+                cost,
+                levelReq
+            });
+
+            el.rIcon.value = "";
+            el.rName.value = "";
+            el.rCost.value = "";
+            el.rLevelReq.value = "";
+            saveToLocal();
+            updateUI();
+        }
+
+        function addHabit() {
+            const name = el.hName.value.trim();
+            const baseTarget = Number.parseInt(el.hTarget.value, 10);
+            const durationMonths = Number.parseInt(el.hMonths.value, 10);
+
+            if (!name) {
+                alert("Please enter a habit name.");
+                return;
+            }
+            if (!Number.isFinite(baseTarget) || baseTarget <= 0) {
+                alert("Habit daily target must be positive.");
+                return;
+            }
+            if (!Number.isFinite(durationMonths) || durationMonths <= 0) {
+                alert("Habit duration in months must be positive.");
+                return;
+            }
+
+            const totalWeeks = Math.max(1, durationMonths * 4);
+            state.habits.push({
+                id: crypto.randomUUID(),
+                name,
+                baseTarget,
+                durationMonths,
+                week: 1,
+                completionsThisWeek: 0,
+                totalCompletions: 0,
+                totalWeeks
+            });
+
+            el.hName.value = "";
+            el.hTarget.value = "";
+            el.hMonths.value = "";
+            saveToLocal();
+            updateUI();
+        }
+
+        function progressHabit(index) {
+            const habit = state.habits[index];
+            if (!habit) return;
+
+            habit.completionsThisWeek += 1;
+            habit.totalCompletions += 1;
+
+            if (habit.completionsThisWeek >= 7) {
+                habit.completionsThisWeek = 0;
+                habit.week += 1;
+            }
+
+            if (habit.week > habit.totalWeeks) {
+                const completionRate = habit.totalCompletions / (habit.totalWeeks * 7);
+                const bonusGold = Math.max(20, Math.round(habit.baseTarget * habit.durationMonths * (1 + completionRate)));
+                const bonusXP = Math.max(10, Math.round(bonusGold / 2));
+                state.gold += bonusGold;
+                state.xp += bonusXP;
+
+                let leveled = false;
+                while (state.xp >= state.level * 100) {
+                    state.xp -= state.level * 100;
+                    state.level += 1;
+                    leveled = true;
+                }
+
+                alert(`Habit complete: ${habit.name}! Reward +${bonusGold}g, +${bonusXP}xp.${leveled ? " Level up achieved!" : ""}`);
+                state.habits.splice(index, 1);
+            }
+
+            saveToLocal();
+            updateUI();
+        }
+
+        function deleteHabit(index) {
+            const habit = state.habits[index];
+            if (!habit) return;
+            state.habits.splice(index, 1);
+            saveToLocal();
+            updateUI();
+        }
+
+        function renderShop() {
+            if (!el.shopList) return;
+            el.shopList.textContent = "";
+            state.rewards.forEach((item, i) => {
+                el.shopList.appendChild(createShopItem(item, i));
+            });
+        }
+
+        function addIncome() {
+            if (!el.fIncomeAmount || !el.fIncomeSubject || !el.fIncomeDate) return;
+            const amount = Number.parseFloat(el.fIncomeAmount.value);
+            const subject = el.fIncomeSubject.value.trim();
+            const date = el.fIncomeDate.value || new Date().toISOString().slice(0, 10);
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                alert("Income amount must be a positive number.");
+                return;
+            }
+            if (!subject) {
+                alert("Please enter an income subject.");
+                return;
+            }
+
+            state.incomes.push({
+                id: crypto.randomUUID(),
+                amount,
+                subject,
+                date
+            });
+
+            el.fIncomeAmount.value = "";
+            el.fIncomeSubject.value = "";
+            el.fIncomeDate.value = "";
+            saveToLocal();
+            updateUI();
+        }
+
+        function addExpense() {
+            if (!el.fExpenseAmount || !el.fExpenseSubject || !el.fExpenseCategory || !el.fExpenseDate) return;
+            const amount = Number.parseFloat(el.fExpenseAmount.value);
+            const subject = el.fExpenseSubject.value.trim();
+            const category = el.fExpenseCategory.value.trim() || "Other";
+            const date = el.fExpenseDate.value || new Date().toISOString().slice(0, 10);
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                alert("Expense amount must be a positive number.");
+                return;
+            }
+            if (!subject) {
+                alert("Please enter an expense subject.");
+                return;
+            }
+
+            state.expenses.push({
+                id: crypto.randomUUID(),
+                amount,
+                subject,
+                category,
+                date
+            });
+
+            el.fExpenseAmount.value = "";
+            el.fExpenseSubject.value = "";
+            el.fExpenseCategory.value = "";
+            el.fExpenseDate.value = "";
+            saveToLocal();
+            updateUI();
+        }
+
+        function renderBarRows(targetEl, rows, fillClass = "") {
+            if (!targetEl) return;
+            targetEl.textContent = "";
+            if (rows.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "muted";
+                empty.textContent = "No data yet.";
+                targetEl.appendChild(empty);
+                return;
+            }
+
+            const maxValue = rows.reduce((m, row) => Math.max(m, Math.abs(row.value)), 0) || 1;
+            rows.forEach((row) => {
+                const wrap = document.createElement("div");
+                wrap.className = "bar-row";
+
+                const label = document.createElement("div");
+                label.textContent = row.label;
+
+                const track = document.createElement("div");
+                track.className = "bar-track";
+                const fill = document.createElement("div");
+                const signClass = row.value < 0 ? "expense" : "";
+                fill.className = `bar-fill ${fillClass} ${signClass}`.trim();
+                fill.style.width = `${Math.max(4, (Math.abs(row.value) / maxValue) * 100)}%`;
+                track.appendChild(fill);
+
+                const value = document.createElement("div");
+                value.textContent = `${row.value < 0 ? "-" : ""}${formatMoney(Math.abs(row.value))}`;
+
+                wrap.append(label, track, value);
+                targetEl.appendChild(wrap);
+            });
+        }
+
+        function renderFinance() {
+            if (!el.incomeTotal || !el.expenseTotal || !el.incomeList || !el.expenseList) return;
+            const incomeTotal = state.incomes.reduce((sum, entry) => sum + entry.amount, 0);
+            const expenseTotal = state.expenses.reduce((sum, entry) => sum + entry.amount, 0);
+            el.incomeTotal.textContent = formatMoney(incomeTotal);
+            el.expenseTotal.textContent = formatMoney(expenseTotal);
+
+            el.incomeList.textContent = "";
+            state.incomes
+                .slice()
+                .sort((a, b) => (a.date < b.date ? 1 : -1))
+                .forEach((entry) => {
+                    const row = document.createElement("div");
+                    row.className = "finance-row";
+                    row.innerHTML = `<span>${entry.subject} (${entry.date || "No date"})</span><strong>${formatMoney(entry.amount)}</strong>`;
+                    el.incomeList.appendChild(row);
+                });
+            if (state.incomes.length === 0) el.incomeList.innerHTML = '<div class="muted">No income records yet.</div>';
+
+            el.expenseList.textContent = "";
+            state.expenses
+                .slice()
+                .sort((a, b) => (a.date < b.date ? 1 : -1))
+                .forEach((entry) => {
+                    const row = document.createElement("div");
+                    row.className = "finance-row";
+                    row.innerHTML = `<span>${entry.subject} • ${entry.category} (${entry.date || "No date"})</span><strong>${formatMoney(entry.amount)}</strong>`;
+                    el.expenseList.appendChild(row);
+                });
+            if (state.expenses.length === 0) el.expenseList.innerHTML = '<div class="muted">No expense records yet.</div>';
+
+            const categoryMap = {};
+            state.expenses.forEach((entry) => {
+                const key = entry.category || "Other";
+                categoryMap[key] = (categoryMap[key] || 0) + entry.amount;
+            });
+            const categoryRows = Object.entries(categoryMap)
+                .map(([label, value]) => ({ label, value }))
+                .sort((a, b) => b.value - a.value);
+            renderBarRows(el.categoryGraph, categoryRows, "expense");
+
+            renderBarRows(el.overviewGraph, [
+                { label: "Income", value: incomeTotal },
+                { label: "Expense", value: expenseTotal }
+            ]);
+
+            const yearMap = {};
+            state.incomes.forEach((entry) => {
+                const year = (entry.date || "").slice(0, 4) || "Unknown";
+                yearMap[year] = yearMap[year] || { income: 0, expense: 0 };
+                yearMap[year].income += entry.amount;
+            });
+            state.expenses.forEach((entry) => {
+                const year = (entry.date || "").slice(0, 4) || "Unknown";
+                yearMap[year] = yearMap[year] || { income: 0, expense: 0 };
+                yearMap[year].expense += entry.amount;
+            });
+            const yearlyRows = Object.entries(yearMap)
+                .map(([year, totals]) => ({ label: year, value: totals.income - totals.expense }))
+                .sort((a, b) => a.label.localeCompare(b.label));
+            renderBarRows(el.yearlyGraph, yearlyRows, "net");
+        }
+
+        function reckoning() {
+            if (state.tasks.length === 0) {
+                alert("Clean slate! No penalties today.");
+                return;
+            }
+
+            const loss = state.tasks.length * 20;
+            state.gold = Math.max(0, state.gold - loss);
+            state.tasks = [];
+
+            saveToLocal();
+            updateUI();
+            alert(`The day is over. Penalty: -${loss} Gold.`);
+        }
+
+        function resetProgress() {
+            if (!confirm("Are you sure? This will delete all your progress!")) return;
+            localStorage.removeItem(STORAGE_KEY);
+            state = structuredClone(defaultState);
+            saveToLocal();
+            updateUI();
+        }
+
+        function setupMobileTabs() {
+            const tabButtons = document.querySelectorAll(".tab-btn");
+            const pages = document.querySelectorAll(".mobile-page");
+
+            tabButtons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const pageId = btn.dataset.page;
+                    tabButtons.forEach((b) => b.classList.remove("active"));
+                    btn.classList.add("active");
+
+                    pages.forEach((page) => {
+                        page.classList.toggle("active", page.id === pageId);
+                    });
+                });
+            });
+        }
+
+        function setupEvents() {
+            el.addTaskBtn.addEventListener("click", addTask);
+            el.addHabitBtn.addEventListener("click", addHabit);
+            el.reckoningBtn.addEventListener("click", reckoning);
+            el.resetBtn.addEventListener("click", resetProgress);
+
+            if (el.addRewardBtn) el.addRewardBtn.addEventListener("click", addReward);
+            if (el.addIncomeBtn) el.addIncomeBtn.addEventListener("click", addIncome);
+            if (el.addExpenseBtn) el.addExpenseBtn.addEventListener("click", addExpense);
+
+            el.tName.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addTask();
+            });
+            if (el.rName) {
+                el.rName.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addReward();
+                });
+            }
+            if (el.rCost) {
+                el.rCost.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addReward();
+                });
+            }
+            if (el.rLevelReq) {
+                el.rLevelReq.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addReward();
+                });
+            }
+            el.hName.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addHabit();
+            });
+            el.hTarget.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addHabit();
+            });
+            el.hMonths.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addHabit();
+            });
+            if (el.fIncomeAmount) {
+                el.fIncomeAmount.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addIncome();
+                });
+            }
+            if (el.fIncomeSubject) {
+                el.fIncomeSubject.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addIncome();
+                });
+            }
+            if (el.fIncomeDate) {
+                el.fIncomeDate.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addIncome();
+                });
+            }
+            if (el.fExpenseAmount) {
+                el.fExpenseAmount.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addExpense();
+                });
+            }
+            if (el.fExpenseSubject) {
+                el.fExpenseSubject.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addExpense();
+                });
+            }
+            if (el.fExpenseCategory) {
+                el.fExpenseCategory.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addExpense();
+                });
+            }
+            if (el.fExpenseDate) {
+                el.fExpenseDate.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") addExpense();
+                });
+            }
+        }
+
+        window.addEventListener("load", () => {
+            loadState();
+            setupEvents();
+            setupMobileTabs();
+            updateUI();
+        });
+    </script>
+</body>
+</html>

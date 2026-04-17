@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LevelUp - Financial Management</title>
+    <style>
+        :root {
+            --bg1: #0f0c29;
+            --bg2: #302b63;
+            --bg3: #24243e;
+            --card: #1d1f38;
+            --card-2: #26294a;
+            --accent: #00d2ff;
+            --accent-2: #5ee7ff;
+            --danger: #ff416c;
+            --text: #ffffff;
+            --muted: #b8bfd5;
+            --line: #404772;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+            padding: 16px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #041923;
+            background: var(--accent);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid #3b426a;
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+            padding: 14px;
+        }
+
+        .wide { grid-column: 1 / -1; }
+
+        input, button {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        input {
+            background: #0f132a;
+            color: #e6ecff;
+            border: 1px solid #39436b;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.2s ease;
+            background: var(--accent);
+            color: #041923;
+        }
+
+        .muted { color: var(--muted); font-size: 0.85rem; }
+
+        .finance-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-bottom: 8px;
+        }
+
+        .finance-list {
+            max-height: 220px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .finance-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            background: #101733;
+            border: 1px solid #2e3a68;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+        }
+
+        .graph-block { margin-bottom: 10px; }
+        .graph-title { margin-bottom: 6px; color: var(--muted); font-size: 0.83rem; }
+        .bar-list { display: grid; gap: 6px; }
+        .bar-row {
+            display: grid;
+            grid-template-columns: 90px 1fr auto;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .bar-track {
+            width: 100%;
+            height: 9px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #0f132a;
+            border: 1px solid #2f3862;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        }
+        .bar-fill.expense { background: linear-gradient(90deg, #ff6a8c, var(--danger)); }
+        .bar-fill.net { background: linear-gradient(90deg, #8bf0bd, #3dd88b); }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+            .wide { grid-column: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1 class="title">Financial Management</h1>
+        <a class="back-link" href="./test.html">Back to LevelUp</a>
+    </div>
+
+    <div class="grid">
+        <section class="card">
+            <h3>Monthly Income</h3>
+            <input type="number" id="fIncomeAmount" min="0.01" step="0.01" placeholder="Income amount...">
+            <input type="text" id="fIncomeSubject" placeholder="Subject... (Salary, Freelance)">
+            <input type="date" id="fIncomeDate">
+            <button id="addIncomeBtn" type="button">Add Income</button>
+            <div class="finance-total"><span>Total Income:</span><strong id="incomeTotal">0.00</strong></div>
+            <div id="incomeList" class="finance-list"></div>
+        </section>
+
+        <section class="card">
+            <h3>Daily Expense</h3>
+            <input type="number" id="fExpenseAmount" min="0.01" step="0.01" placeholder="Expense amount...">
+            <input type="text" id="fExpenseSubject" placeholder="Subject... (Lunch, Transport)">
+            <input type="text" id="fExpenseCategory" placeholder="Category... (Food, Bills, Travel)">
+            <input type="date" id="fExpenseDate">
+            <button id="addExpenseBtn" type="button">Add Expense</button>
+            <div class="finance-total"><span>Total Expense:</span><strong id="expenseTotal">0.00</strong></div>
+            <div id="expenseList" class="finance-list"></div>
+        </section>
+
+        <section class="card wide">
+            <h3>Income & Expense Graph</h3>
+            <div class="graph-block">
+                <div class="graph-title">Expenses per Categories</div>
+                <div id="categoryGraph" class="bar-list"></div>
+            </div>
+            <div class="graph-block">
+                <div class="graph-title">Total Income vs Total Expense</div>
+                <div id="overviewGraph" class="bar-list"></div>
+            </div>
+            <div class="graph-block">
+                <div class="graph-title">Yearly Revenue (Income - Expense)</div>
+                <div id="yearlyGraph" class="bar-list"></div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "gamifyLocalDB";
+        const defaultFinanceState = { incomes: [], expenses: [] };
+
+        let state = structuredClone(defaultFinanceState);
+
+        const el = {
+            fIncomeAmount: document.getElementById("fIncomeAmount"),
+            fIncomeSubject: document.getElementById("fIncomeSubject"),
+            fIncomeDate: document.getElementById("fIncomeDate"),
+            addIncomeBtn: document.getElementById("addIncomeBtn"),
+            incomeTotal: document.getElementById("incomeTotal"),
+            incomeList: document.getElementById("incomeList"),
+            fExpenseAmount: document.getElementById("fExpenseAmount"),
+            fExpenseSubject: document.getElementById("fExpenseSubject"),
+            fExpenseCategory: document.getElementById("fExpenseCategory"),
+            fExpenseDate: document.getElementById("fExpenseDate"),
+            addExpenseBtn: document.getElementById("addExpenseBtn"),
+            expenseTotal: document.getElementById("expenseTotal"),
+            expenseList: document.getElementById("expenseList"),
+            categoryGraph: document.getElementById("categoryGraph"),
+            overviewGraph: document.getElementById("overviewGraph"),
+            yearlyGraph: document.getElementById("yearlyGraph")
+        };
+
+        function normalize(data) {
+            return {
+                incomes: Array.isArray(data?.incomes) ? data.incomes.map((i) => ({
+                    id: i.id || crypto.randomUUID(),
+                    amount: Number.isFinite(i.amount) && i.amount > 0 ? i.amount : 0,
+                    subject: String(i.subject || "").trim(),
+                    date: String(i.date || "")
+                })).filter((i) => i.amount > 0 && i.subject.length > 0) : [],
+                expenses: Array.isArray(data?.expenses) ? data.expenses.map((x) => ({
+                    id: x.id || crypto.randomUUID(),
+                    amount: Number.isFinite(x.amount) && x.amount > 0 ? x.amount : 0,
+                    subject: String(x.subject || "").trim(),
+                    category: String(x.category || "").trim() || "Other",
+                    date: String(x.date || "")
+                })).filter((x) => x.amount > 0 && x.subject.length > 0) : []
+            };
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const full = JSON.parse(raw);
+                state = normalize(full);
+            } catch (err) {
+                console.warn("Failed to load finance data:", err);
+                state = structuredClone(defaultFinanceState);
+            }
+        }
+
+        function saveState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                const full = raw ? JSON.parse(raw) : {};
+                full.incomes = state.incomes;
+                full.expenses = state.expenses;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(full));
+            } catch (err) {
+                console.warn("Failed to save finance data:", err);
+            }
+        }
+
+        function formatMoney(amount) {
+            return `${amount.toFixed(2)}`;
+        }
+
+        function renderBarRows(targetEl, rows, fillClass = "") {
+            targetEl.textContent = "";
+            if (rows.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "muted";
+                empty.textContent = "No data yet.";
+                targetEl.appendChild(empty);
+                return;
+            }
+
+            const maxValue = rows.reduce((m, row) => Math.max(m, Math.abs(row.value)), 0) || 1;
+            rows.forEach((row) => {
+                const wrap = document.createElement("div");
+                wrap.className = "bar-row";
+
+                const label = document.createElement("div");
+                label.textContent = row.label;
+
+                const track = document.createElement("div");
+                track.className = "bar-track";
+                const fill = document.createElement("div");
+                const signClass = row.value < 0 ? "expense" : "";
+                fill.className = `bar-fill ${fillClass} ${signClass}`.trim();
+                fill.style.width = `${Math.max(4, (Math.abs(row.value) / maxValue) * 100)}%`;
+                track.appendChild(fill);
+
+                const value = document.createElement("div");
+                value.textContent = `${row.value < 0 ? "-" : ""}${formatMoney(Math.abs(row.value))}`;
+
+                wrap.append(label, track, value);
+                targetEl.appendChild(wrap);
+            });
+        }
+
+        function render() {
+            const incomeTotal = state.incomes.reduce((sum, entry) => sum + entry.amount, 0);
+            const expenseTotal = state.expenses.reduce((sum, entry) => sum + entry.amount, 0);
+            el.incomeTotal.textContent = formatMoney(incomeTotal);
+            el.expenseTotal.textContent = formatMoney(expenseTotal);
+
+            el.incomeList.textContent = "";
+            state.incomes
+                .slice()
+                .sort((a, b) => (a.date < b.date ? 1 : -1))
+                .forEach((entry) => {
+                    const row = document.createElement("div");
+                    row.className = "finance-row";
+                    row.innerHTML = `<span>${entry.subject} (${entry.date || "No date"})</span><strong>${formatMoney(entry.amount)}</strong>`;
+                    el.incomeList.appendChild(row);
+                });
+            if (state.incomes.length === 0) {
+                el.incomeList.innerHTML = '<div class="muted">No income records yet.</div>';
+            }
+
+            el.expenseList.textContent = "";
+            state.expenses
+                .slice()
+                .sort((a, b) => (a.date < b.date ? 1 : -1))
+                .forEach((entry) => {
+                    const row = document.createElement("div");
+                    row.className = "finance-row";
+                    row.innerHTML = `<span>${entry.subject} • ${entry.category} (${entry.date || "No date"})</span><strong>${formatMoney(entry.amount)}</strong>`;
+                    el.expenseList.appendChild(row);
+                });
+            if (state.expenses.length === 0) {
+                el.expenseList.innerHTML = '<div class="muted">No expense records yet.</div>';
+            }
+
+            const categoryMap = {};
+            state.expenses.forEach((entry) => {
+                const key = entry.category || "Other";
+                categoryMap[key] = (categoryMap[key] || 0) + entry.amount;
+            });
+            const categoryRows = Object.entries(categoryMap)
+                .map(([label, value]) => ({ label, value }))
+                .sort((a, b) => b.value - a.value);
+            renderBarRows(el.categoryGraph, categoryRows, "expense");
+
+            renderBarRows(el.overviewGraph, [
+                { label: "Income", value: incomeTotal },
+                { label: "Expense", value: expenseTotal }
+            ]);
+
+            const yearMap = {};
+            state.incomes.forEach((entry) => {
+                const year = (entry.date || "").slice(0, 4) || "Unknown";
+                yearMap[year] = yearMap[year] || { income: 0, expense: 0 };
+                yearMap[year].income += entry.amount;
+            });
+            state.expenses.forEach((entry) => {
+                const year = (entry.date || "").slice(0, 4) || "Unknown";
+                yearMap[year] = yearMap[year] || { income: 0, expense: 0 };
+                yearMap[year].expense += entry.amount;
+            });
+            const yearlyRows = Object.entries(yearMap)
+                .map(([year, totals]) => ({ label: year, value: totals.income - totals.expense }))
+                .sort((a, b) => a.label.localeCompare(b.label));
+            renderBarRows(el.yearlyGraph, yearlyRows, "net");
+        }
+
+        function addIncome() {
+            const amount = Number.parseFloat(el.fIncomeAmount.value);
+            const subject = el.fIncomeSubject.value.trim();
+            const date = el.fIncomeDate.value || new Date().toISOString().slice(0, 10);
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                alert("Income amount must be a positive number.");
+                return;
+            }
+            if (!subject) {
+                alert("Please enter an income subject.");
+                return;
+            }
+
+            state.incomes.push({
+                id: crypto.randomUUID(),
+                amount,
+                subject,
+                date
+            });
+
+            el.fIncomeAmount.value = "";
+            el.fIncomeSubject.value = "";
+            el.fIncomeDate.value = "";
+            saveState();
+            render();
+        }
+
+        function addExpense() {
+            const amount = Number.parseFloat(el.fExpenseAmount.value);
+            const subject = el.fExpenseSubject.value.trim();
+            const category = el.fExpenseCategory.value.trim() || "Other";
+            const date = el.fExpenseDate.value || new Date().toISOString().slice(0, 10);
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                alert("Expense amount must be a positive number.");
+                return;
+            }
+            if (!subject) {
+                alert("Please enter an expense subject.");
+                return;
+            }
+
+            state.expenses.push({
+                id: crypto.randomUUID(),
+                amount,
+                subject,
+                category,
+                date
+            });
+
+            el.fExpenseAmount.value = "";
+            el.fExpenseSubject.value = "";
+            el.fExpenseCategory.value = "";
+            el.fExpenseDate.value = "";
+            saveState();
+            render();
+        }
+
+        function setupEvents() {
+            el.addIncomeBtn.addEventListener("click", addIncome);
+            el.addExpenseBtn.addEventListener("click", addExpense);
+
+            el.fIncomeAmount.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addIncome();
+            });
+            el.fIncomeSubject.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addIncome();
+            });
+            el.fIncomeDate.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addIncome();
+            });
+
+            el.fExpenseAmount.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addExpense();
+            });
+            el.fExpenseSubject.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addExpense();
+            });
+            el.fExpenseCategory.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addExpense();
+            });
+            el.fExpenseDate.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addExpense();
+            });
+        }
+
+        window.addEventListener("load", () => {
+            loadState();
+            setupEvents();
+            render();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LevelUp - Reward Shop</title>
+    <style>
+        :root {
+            --bg1: #0b1020;
+            --bg2: #171f3a;
+            --bg3: #2a1a4a;
+            --card: #151d36;
+            --card-2: #1d2746;
+            --accent: #5ee7ff;
+            --accent-2: #00b4ff;
+            --gold: #f6c75b;
+            --danger: #ff5d86;
+            --text: #ffffff;
+            --muted: #b8bfd5;
+            --line: #3f4c78;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top right, #29376b 0%, transparent 38%),
+                        linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+            padding: 18px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.3px; }
+
+        .link-btn {
+            text-decoration: none;
+            color: #032236;
+            background: var(--accent);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 0.86rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--card), var(--card-2));
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+            padding: 14px;
+        }
+
+        .stats-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #39456f;
+        }
+
+        .gold { color: var(--gold); font-weight: 700; }
+        .muted { color: var(--muted); font-size: 0.84rem; }
+
+        .shop-list {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .shop-item {
+            background: #101733;
+            border: 1px solid #324273;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .item-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid #4a5c92;
+            display: grid;
+            place-items: center;
+            font-size: 1.3rem;
+            background: #16224a;
+            flex-shrink: 0;
+        }
+
+        .item-title {
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-sub { color: var(--muted); font-size: 0.8rem; }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        input, button {
+            width: 100%;
+            border-radius: 8px;
+            border: none;
+            padding: 10px;
+            margin-bottom: 9px;
+            font-size: 0.94rem;
+        }
+
+        input {
+            background: #0f132a;
+            color: #e6ecff;
+            border: 1px solid #39436b;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.2s ease;
+        }
+
+        .buy-btn {
+            width: auto;
+            margin: 0;
+            background: var(--gold);
+            color: #322609;
+            padding: 6px 12px;
+        }
+
+        .delete-btn {
+            width: auto;
+            margin: 0;
+            background: var(--danger);
+            color: #fff;
+            padding: 6px 12px;
+        }
+
+        .primary { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #032236; }
+
+        .blocked {
+            opacity: 0.55;
+        }
+        .mr {
+            margin-top: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Reward Shop</h1>
+        <a class="link-btn" href="./test.html">Back to LevelUp</a>
+    </div>
+
+    <div class="layout">
+        <aside class="card">
+            <h3>Character Wallet</h3>
+            <div class="stats-line"><span>Level</span><strong id="level">1</strong></div>
+            <div class="stats-line"><span>Gold</span><strong id="gold" class="gold">0</strong></div>
+            <p class="muted">Buy rewards only if your level and gold are enough.</p>
+        </aside>
+
+        <main class="card">
+            <h3>Modern Reward Catalog</h3>
+            
+
+            <h4>Add New Reward</h4>
+            <input type="text" id="rIcon" placeholder="Icon (emoji)... e.g. 🎧">
+            <input type="text" id="rName" placeholder="Reward name...">
+            <input type="number" id="rCost" min="1" step="1" placeholder="Cost in gold...">
+            <input type="number" id="rLevelReq" min="1" step="1" placeholder="Minimum level required...">
+            <button id="addRewardBtn" class="primary" type="button">Add to Shop</button>
+        </main>
+    </div>
+
+    <div class="card mr">
+        <div id="shopList" class="shop-list"></div>
+    </div>
+    <script>
+        const STORAGE_KEY = "gamifyLocalDB";
+
+        const defaultState = {
+            gold: 0,
+            level: 1,
+            rewards: [
+                { id: crypto.randomUUID(), icon: "🎬", name: "Watch Movie", cost: 100, levelReq: 1 },
+                { id: crypto.randomUUID(), icon: "🍕", name: "Order Pizza", cost: 300, levelReq: 2 }
+            ]
+        };
+
+        let state = structuredClone(defaultState);
+
+        const el = {
+            level: document.getElementById("level"),
+            gold: document.getElementById("gold"),
+            shopList: document.getElementById("shopList"),
+            rIcon: document.getElementById("rIcon"),
+            rName: document.getElementById("rName"),
+            rCost: document.getElementById("rCost"),
+            rLevelReq: document.getElementById("rLevelReq"),
+            addRewardBtn: document.getElementById("addRewardBtn")
+        };
+
+        function normalizeLoadedState(data) {
+            return {
+                gold: Number.isFinite(data?.gold) ? data.gold : 0,
+                level: Number.isFinite(data?.level) && data.level > 0 ? data.level : 1,
+                rewards: Array.isArray(data?.rewards) && data.rewards.length > 0
+                    ? data.rewards.map((r) => ({
+                        id: r.id || crypto.randomUUID(),
+                        icon: String(r.icon || "🎁").trim() || "🎁",
+                        name: String(r.name || "").trim(),
+                        cost: Number.isFinite(r.cost) ? r.cost : 1,
+                        levelReq: Number.isFinite(r.levelReq) && r.levelReq > 0 ? r.levelReq : 1
+                    })).filter((r) => r.name.length > 0 && r.cost > 0)
+                    : structuredClone(defaultState.rewards)
+            };
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                state = normalizeLoadedState(JSON.parse(raw));
+            } catch (err) {
+                console.warn("Failed to load shop data:", err);
+                state = structuredClone(defaultState);
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function createShopItem(item, index) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "shop-item";
+
+            const canBuy = state.gold >= item.cost && state.level >= item.levelReq;
+            if (!canBuy) wrapper.classList.add("blocked");
+
+            const main = document.createElement("div");
+            main.className = "item-main";
+
+            const icon = document.createElement("div");
+            icon.className = "item-icon";
+            icon.textContent = item.icon || "🎁";
+
+            const info = document.createElement("div");
+            const title = document.createElement("div");
+            title.className = "item-title";
+            title.textContent = item.name;
+            const sub = document.createElement("div");
+            sub.className = "item-sub";
+            sub.textContent = `${item.cost}g • Req Lv ${item.levelReq}`;
+            info.append(title, sub);
+            main.append(icon, info);
+
+            const actions = document.createElement("div");
+            actions.className = "actions";
+
+            const buy = document.createElement("button");
+            buy.className = "buy-btn";
+            buy.type = "button";
+            buy.textContent = "Buy";
+            buy.addEventListener("click", () => buyReward(index));
+
+            const del = document.createElement("button");
+            del.className = "delete-btn";
+            del.type = "button";
+            del.textContent = "Delete";
+            del.addEventListener("click", () => deleteReward(index));
+
+            actions.append(buy, del);
+            wrapper.append(main, actions);
+            return wrapper;
+        }
+
+        function renderShop() {
+            el.level.textContent = String(state.level);
+            el.gold.textContent = String(state.gold);
+
+            el.shopList.textContent = "";
+            state.rewards.forEach((item, i) => {
+                el.shopList.appendChild(createShopItem(item, i));
+            });
+        }
+
+        function buyReward(index) {
+            const reward = state.rewards[index];
+            if (!reward) return;
+
+            if (state.level < reward.levelReq) {
+                alert(`You need Level ${reward.levelReq} to buy this reward.`);
+                return;
+            }
+            if (state.gold < reward.cost) {
+                alert("Insufficient Gold!");
+                return;
+            }
+
+            state.gold -= reward.cost;
+            saveState();
+            renderShop();
+            alert(`Purchase successful: ${reward.name}`);
+        }
+
+        function deleteReward(index) {
+            if (!state.rewards[index]) return;
+            state.rewards.splice(index, 1);
+            saveState();
+            renderShop();
+        }
+
+        function addReward() {
+            const icon = (el.rIcon.value.trim() || "🎁").slice(0, 3);
+            const name = el.rName.value.trim();
+            const cost = Number.parseInt(el.rCost.value, 10);
+            const levelReq = Number.parseInt(el.rLevelReq.value, 10);
+
+            if (!name) return alert("Please enter a reward name.");
+            if (!Number.isFinite(cost) || cost <= 0) return alert("Reward cost must be positive.");
+            if (!Number.isFinite(levelReq) || levelReq <= 0) return alert("Level requirement must be positive.");
+
+            state.rewards.push({
+                id: crypto.randomUUID(),
+                icon,
+                name,
+                cost,
+                levelReq
+            });
+
+            el.rIcon.value = "";
+            el.rName.value = "";
+            el.rCost.value = "";
+            el.rLevelReq.value = "";
+            saveState();
+            renderShop();
+        }
+
+        function setupEvents() {
+            el.addRewardBtn.addEventListener("click", addReward);
+            el.rName.addEventListener("keydown", (e) => { if (e.key === "Enter") addReward(); });
+            el.rCost.addEventListener("keydown", (e) => { if (e.key === "Enter") addReward(); });
+            el.rLevelReq.addEventListener("keydown", (e) => { if (e.key === "Enter") addReward(); });
+        }
+
+        window.addEventListener("load", () => {
+            loadState();
+            setupEvents();
+            renderShop();
+        });
+    </script>
+</body>
+</html>
