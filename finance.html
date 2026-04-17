@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <meta name="theme-color" content="#0f0c29">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./icons/icon-192.svg">
     <title>LevelUp - Financial Management</title>
     <style>
         :root {
@@ -182,6 +187,15 @@
         </section>
 
         <section class="card wide">
+            <h3>Total Savings</h3>
+            <input type="number" id="fSavingAmount" min="0.01" step="0.01" placeholder="Saving amount...">
+            <input type="date" id="fSavingDate">
+            <button id="addSavingBtn" type="button">Add Saving</button>
+            <div class="finance-total"><span>Total Savings:</span><strong id="savingTotal">0.00</strong></div>
+            <div id="savingList" class="finance-list"></div>
+        </section>
+
+        <section class="card wide">
             <h3>Income & Expense Graph</h3>
             <div class="graph-block">
                 <div class="graph-title">Expenses per Categories</div>
@@ -199,8 +213,16 @@
     </div>
 
     <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./sw.js").catch((err) => {
+                    console.warn("Service worker registration failed:", err);
+                });
+            });
+        }
+
         const STORAGE_KEY = "gamifyLocalDB";
-        const defaultFinanceState = { incomes: [], expenses: [] };
+        const defaultFinanceState = { incomes: [], expenses: [], savings: [] };
 
         let state = structuredClone(defaultFinanceState);
 
@@ -218,6 +240,11 @@
             addExpenseBtn: document.getElementById("addExpenseBtn"),
             expenseTotal: document.getElementById("expenseTotal"),
             expenseList: document.getElementById("expenseList"),
+            fSavingAmount: document.getElementById("fSavingAmount"),
+            fSavingDate: document.getElementById("fSavingDate"),
+            addSavingBtn: document.getElementById("addSavingBtn"),
+            savingTotal: document.getElementById("savingTotal"),
+            savingList: document.getElementById("savingList"),
             categoryGraph: document.getElementById("categoryGraph"),
             overviewGraph: document.getElementById("overviewGraph"),
             yearlyGraph: document.getElementById("yearlyGraph")
@@ -237,7 +264,12 @@
                     subject: String(x.subject || "").trim(),
                     category: String(x.category || "").trim() || "Other",
                     date: String(x.date || "")
-                })).filter((x) => x.amount > 0 && x.subject.length > 0) : []
+                })).filter((x) => x.amount > 0 && x.subject.length > 0) : [],
+                savings: Array.isArray(data?.savings) ? data.savings.map((s) => ({
+                    id: s.id || crypto.randomUUID(),
+                    amount: Number.isFinite(s.amount) && s.amount > 0 ? s.amount : 0,
+                    date: String(s.date || "")
+                })).filter((s) => s.amount > 0) : []
             };
         }
 
@@ -259,6 +291,7 @@
                 const full = raw ? JSON.parse(raw) : {};
                 full.incomes = state.incomes;
                 full.expenses = state.expenses;
+                full.savings = state.savings;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(full));
             } catch (err) {
                 console.warn("Failed to save finance data:", err);
@@ -306,8 +339,10 @@
         function render() {
             const incomeTotal = state.incomes.reduce((sum, entry) => sum + entry.amount, 0);
             const expenseTotal = state.expenses.reduce((sum, entry) => sum + entry.amount, 0);
+            const savingTotal = state.savings.reduce((sum, entry) => sum + entry.amount, 0);
             el.incomeTotal.textContent = formatMoney(incomeTotal);
             el.expenseTotal.textContent = formatMoney(expenseTotal);
+            el.savingTotal.textContent = formatMoney(savingTotal);
 
             el.incomeList.textContent = "";
             state.incomes
@@ -335,6 +370,20 @@
                 });
             if (state.expenses.length === 0) {
                 el.expenseList.innerHTML = '<div class="muted">No expense records yet.</div>';
+            }
+
+            el.savingList.textContent = "";
+            state.savings
+                .slice()
+                .sort((a, b) => (a.date < b.date ? 1 : -1))
+                .forEach((entry) => {
+                    const row = document.createElement("div");
+                    row.className = "finance-row";
+                    row.innerHTML = `<span>Saved on ${entry.date || "No date"}</span><strong>${formatMoney(entry.amount)}</strong>`;
+                    el.savingList.appendChild(row);
+                });
+            if (state.savings.length === 0) {
+                el.savingList.innerHTML = '<div class="muted">No savings records yet.</div>';
             }
 
             const categoryMap = {};
@@ -428,9 +477,31 @@
             render();
         }
 
+        function addSaving() {
+            const amount = Number.parseFloat(el.fSavingAmount.value);
+            const date = el.fSavingDate.value || new Date().toISOString().slice(0, 10);
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                alert("Saving amount must be a positive number.");
+                return;
+            }
+
+            state.savings.push({
+                id: crypto.randomUUID(),
+                amount,
+                date
+            });
+
+            el.fSavingAmount.value = "";
+            el.fSavingDate.value = "";
+            saveState();
+            render();
+        }
+
         function setupEvents() {
             el.addIncomeBtn.addEventListener("click", addIncome);
             el.addExpenseBtn.addEventListener("click", addExpense);
+            el.addSavingBtn.addEventListener("click", addSaving);
 
             el.fIncomeAmount.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") addIncome();
@@ -453,6 +524,13 @@
             });
             el.fExpenseDate.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") addExpense();
+            });
+
+            el.fSavingAmount.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addSaving();
+            });
+            el.fSavingDate.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") addSaving();
             });
         }
 
